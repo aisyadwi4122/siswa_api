@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Siswa;
 use Illuminate\Http\Request;
-use Log;
+use Illuminate\Support\Facades\Log;
+
 
 class SiswaController extends Controller
 {
@@ -13,7 +14,7 @@ class SiswaController extends Controller
         try {
             return Siswa::all();
         } catch (\Exception $e) {
-            Log::error('Error: ' . $e->getMessage());
+            Log::error('error: ' . $e->getMessage());
             return response()->json(['error' => 'Gagal mengambil data siswa.'], 500);
         }
     }
@@ -46,6 +47,16 @@ class SiswaController extends Controller
 
     public function update(Request $request, $id)
     {
+        $validator = Validator::make($request->all(), [
+            'nama' => ['sometimes', 'required', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
+            'kelas' => ['sometimes', 'required', 'string', 'max:10', 'regex:/^(X|XI|XII)\s(IPA|IPS)\s[1-9]$/'],
+            'umur' => 'sometimes|required|integer|min:6|max:18'
+        ], [
+            'nama.regex' => 'Nama hanya boleh mengandung huruf dan spasi',
+            'kelas.regex' => 'Format kelas harus seperti "XII IPA 1"',
+            'umur.min' => 'Umur minimal adalah 6 tahun',
+            'umur.max' => 'Umur maksimal adalah 18 tahun'
+        ]);
         try {
             $siswa = Siswa::findOrFail($id);
 
